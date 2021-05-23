@@ -10,6 +10,7 @@ const createClient = () => {
 
 const docClient = createClient();
 const booksTable = 'books';
+const usersTable = 'users';
 
 const getAllBooks = () => {
     const params = {
@@ -17,6 +18,17 @@ const getAllBooks = () => {
     };
 
     return docClient.scan(params).promise();
+};
+
+const getBookById = async (id) => {
+    const params = {
+      TableName: booksTable,
+      Key: {
+        id
+      }
+    };
+    const user = await docClient.get(params).promise();
+    return user.Item;
 };
 
 const createBook = (payload) => {
@@ -32,7 +44,76 @@ const createBook = (payload) => {
     return docClient.put(params).promise();
 };
 
+const getAllUsers = () => {
+    const params = {
+        TableName: usersTable
+    };
+
+    return docClient.scan(params).promise();
+};
+
+const createUser = (payload) => {
+
+    const params = {
+        TableName: usersTable,
+        Item: {
+            id: uuid.v1(),
+            ...payload,
+        }
+    };
+
+    return docClient.put(params).promise();
+};
+
+
+const getUserById = async (id) => {
+    const params = {
+      TableName: usersTable,
+      Key: {
+        id
+      }
+    };
+    const user = await docClient.get(params).promise();
+    return user.Item;
+  };
+
+const deleteUser = async (id) => {
+    const params = {
+        TableName: usersTable,
+        Key: {
+          id
+        },
+        ReturnValues: 'ALL_OLD'
+      };
+    
+      const user = await docClient.delete(params).promise();
+      return user.Attributes;
+};
+
+const updateUser = async (id, mail) => {
+    const params = {
+        TableName: usersTable,
+        Key: {
+            id
+        },
+        UpdateExpression: 'set email = :e',
+        ExpressionAttributeValues: {
+            ':e': email
+        },
+        ReturnValues: 'ALL_NEW'
+    };
+
+    const user = await docClient.update(params).promise();
+    return user.Attributes;
+};
+
 module.exports = {
     getAllBooks,
-    createBook
+    getBookById,
+    createBook,
+    getAllUsers,
+    createUser,
+    getUserById,
+    deleteUser,
+    updateUser
 };
