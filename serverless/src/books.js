@@ -6,6 +6,10 @@ exports.handler = async (event, context) => {
       case "GET":
         if (event.requestContext.path.includes("/{id}")) {
           return await getBookById(event.pathParameters.id);
+        } else if (event.requestContext.path.includes("/{id}/comments")) {
+          return await getCommentById(event.pathParameters.id);
+        } else if (event.requestContext.path.includes("/comments")) {
+          return await getAllComments();
         } else {
           return await getAllBooks();
         }
@@ -16,8 +20,18 @@ exports.handler = async (event, context) => {
           return await createBook(event.body);
         }
       case "DELETE":
+        if (event.requestContext.path.includes("/{id}/comments")) {
           return await deleteComment(event.pathParameters.id, event.pathParameters.commentId);
-        
+        } else {
+          return await deleteBook(event.body);
+        }
+      case "PATCH":
+        if (event.requestContext.path.includes("/{id}/comments")) {
+          return await updateComment(event.pathParameters.id, event.pathParameters.commentId);
+        } else {
+          return await updateBook(event.body);
+        }
+
       default:
         return createResponse(400, `Unsupported method ${event.httpMethod}`);
     }
@@ -77,4 +91,23 @@ const deleteComment = async (id, commentId) => {
   const comment = dbManager.deleteComment(id, commentId);
   
     return createResponse(comment ? 200 : 404, comment);
+};
+
+
+const updateComment = async (id, commentId) => {
+  const comment = dbManager.deleteComment(id, commentId);
+  
+    return createResponse(comment ? 200 : 404, comment);
+};
+
+const getAllComments = async () => {
+    const comments = dbManager.getAllComments();
+  
+    return createResponse(comments ? 200 : 404, comments);
+};
+
+const getCommentById = async (id, commentId) => {
+  const comment = dbManager.getCommentById(id,commentId);
+
+  return createResponse(comment ? 200 : 404, comment);
 };
