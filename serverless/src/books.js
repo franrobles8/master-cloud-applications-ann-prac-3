@@ -3,7 +3,8 @@ const dbManager = require("./dbManager");
 // Books
 exports.lambdaGetAllBooks = async (event, context) => {
   try {
-    return await getAllBooks();
+    const books = await getAllBooks();
+    return books;
   } catch(error) {
     console.log(error);
     return createResponse(500, `Something went wrong`);
@@ -23,7 +24,8 @@ exports.lambdaGetBookById = async (event, context) => {
 exports.lambdaCreateBook = async (event, context) => 
 {
   try {
-    return await createBook(event.body);
+    const book = await createBook(event.body);
+    return book;
   } catch(error) {
     console.log(error);
     return createResponse(500, `Something went wrong`);
@@ -33,7 +35,8 @@ exports.lambdaCreateBook = async (event, context) =>
 exports.lambdaUpdateBook = async (event, context) => 
 {
   try {
-    return await updateBook(event.body);
+    const book = await updateBook(event.pathParameters.id,event.body);
+    return book;
   } catch(error) {
     console.log(error);
     if(error.status !== 500) {
@@ -46,7 +49,8 @@ exports.lambdaUpdateBook = async (event, context) =>
 exports.lambdaDeleteBook = async (event, context) => 
 {
   try {
-    return await deleteBook(event.pathParameters.id);
+    const book = await deleteBook(event.pathParameters.id);
+    return book;
   } catch(error) {
     console.log(error);
     if(error.status !== 500) {
@@ -77,11 +81,11 @@ const getBookById = async (id) => {
 const createBook = async (payload) => {
   payload = JSON.parse(payload);
 
-  const createdBook = await dbManager.createBook(payload);
+  const book = await dbManager.createBook(payload);
 
   // TO-DO: Transform response from db to dtoResponse
 
-  return createResponse(201, createdBook);
+  return createResponse(201, book);
 };
 
 const updateBook = async (id, payload) => {

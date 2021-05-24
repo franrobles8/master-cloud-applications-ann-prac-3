@@ -4,4 +4,7 @@ class HTTPError extends Error {
     this.status = status;
   }
 }
-export default HTTPError;
+
+module.exports = {
+  HTTPError: HTTPError  
+};

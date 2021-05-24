@@ -1,13 +1,15 @@
 const uuid = require("uuid");
 const AWS = require("aws-sdk");
-const HTTPError = require("./http-error");
+const HTTPErrors = require("./http-error");
+
+const HTTPError = HTTPErrors.HTTPError
 
 const createClient = () => {
   let options = {};
   options.region = process.env.AWS_REGION || "eu-west-2";
   options.endpoint = process.env.ENDPOINT_OVERRIDE
     ? process.env.ENDPOINT_OVERRIDE
-    : "https://dynamodb.eu-west-2.amazonaws.com";
+    : 'http://172.17.0.1:8000/'; //"https://dynamodb.eu-west-2.amazonaws.com";
   return new AWS.DynamoDB.DocumentClient(options);
 };
 
@@ -20,9 +22,8 @@ const getAllBooks = async () => {
     TableName: booksTable,
   };
 
-  const response = await docClient.scan(params).promise();
-
-  return response.Items;
+  const books = await docClient.scan(params).promise();
+  return books.Items;
 };
 
 const getBookById = async (id) => {
@@ -32,40 +33,63 @@ const getBookById = async (id) => {
       id,
     },
   };
-  const book = await docClient.getItem(params).promise();
+  const book = await docClient.get(params).promise();
 
-  if (!book) {
+  if (!book.Item) {
     throw new HTTPError(404, "Book not found");
   }
 
   return book.Item;
 };
 
-const createBook = (payload) => {
+const createBook = async (payload) => {
   const params = {
     TableName: booksTable,
     Item: {
       id: uuid.v1(),
-      ...payload,
+      title: payload.title,
+      summary: payload.summary,
+      author: payload.author,
+      publisher: payload.publisher,
+      publicationYear: payload.publicationYear
     },
   };
 
-  return docClient.put(params).promise();
+  await docClient.put(params).promise();
+  return params.Item;
 };
 
-const updateBook = (id, payload) => {
+const updateBook = async (id, payload) => {
   getBookById(id);
 
   const params = {
     TableName: booksTable,
     Item: {
-      id,
-      ...payload,
+      id: id,
+      title: payload.title,
+      summary: payload.summary,
+      author: payload.author,
+      publisher: payload.publisher,
+      publicationYear: payload.publicationYear
     },
   };
 
-  return docClient.put(params).promise();
+  await docClient.put(params).promise();
+  return params.Item;
 };
+
+const deleteBook = async (id, payload) => {
+  const params = {
+    TableName: booksTable,
+    Key: {
+        id
+    },
+    ReturnValues: 'ALL_OLD'
+  };
+
+  const book = await docClient.delete(params).promise();
+  return book.Attributes;
+}
 
 const getAllUsers = () => {
   const params = {
@@ -132,6 +156,8 @@ module.exports = {
   getAllBooks,
   getBookById,
   createBook,
+  updateBook,
+  deleteBook,
   getAllUsers,
   createUser,
   getUserById,

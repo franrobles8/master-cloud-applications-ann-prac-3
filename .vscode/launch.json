@@ -1,0 +1,67 @@
+{
+    "configurations": [
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "API serverless:booksUpdateBookFunction",
+            "invokeTarget": {
+                "target": "api",
+                "templatePath": "${workspaceFolder}/serverless/template.yaml",
+                "logicalId": "booksUpdateBookFunction"
+            },
+            "api": {
+                "path": "/api/v1/books/eed650c0-bcd9-11eb-a500-e70daa29c9fc",
+                "httpMethod": "patch",
+                "payload": {
+                    "json": {
+                        "author": "Book 3 author",
+                        "publisher": "Book 3 publisher",
+                        "title": "Book 3",
+                        "summary": "Book 3 summary",
+                        "publicationYear": 1990
+                    }
+                }
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "API serverless:booksGetAllBooksFunction",
+            "invokeTarget": {
+                "target": "api",
+                "templatePath": "${workspaceFolder}/serverless/template.yaml",
+                "logicalId": "booksGetAllBooksFunction"
+            },
+            "api": {
+                "path": "/api/v1/books/",
+                "httpMethod": "get",
+                "payload": {
+                    "json": {}
+                }
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "API serverless:booksCreateBookFunction",
+            "invokeTarget": {
+                "target": "api",
+                "templatePath": "${workspaceFolder}/serverless/template.yaml",
+                "logicalId": "booksCreateBookFunction"
+            },
+            "api": {
+                "path": "/api/v1/books/",
+                "httpMethod": "post",
+                "payload": {
+                    "json": {
+                        "author": "Book 3 author",
+                        "publisher": "Book 3 publisher",
+                        "title": "Book 3",
+                        "summary": "Book 3 summary",
+                        "publicationYear": 1996
+                    }
+                }
+            }
+        }
+    ]
+}
