@@ -1,45 +1,60 @@
-const dbManager = require('./dbManager');
+const dbManager = require("./dbManager");
 
-exports.handler = async (event, context) => {
+// Books
+exports.lambdaGetAllBooks = async (event, context) => {
   try {
-    switch (event.httpMethod) {
-      case "GET":
-        if (event.requestContext.path.includes("/{id}")) {
-          return await getBookById(event.pathParameters.id);
-        } else if (event.requestContext.path.includes("/{id}/comments")) {
-          return await getCommentById(event.pathParameters.id);
-        } else if (event.requestContext.path.includes("/comments")) {
-          return await getAllComments();
-        } else {
-          return await getAllBooks();
-        }
-      case "POST":
-        if (event.requestContext.path.includes("/{id}/comments")) {
-          return await createComment(event.pathParameters.id, event.body);
-        } else {
-          return await createBook(event.body);
-        }
-      case "DELETE":
-        if (event.requestContext.path.includes("/{id}/comments")) {
-          return await deleteComment(event.pathParameters.id, event.pathParameters.commentId);
-        } else {
-          return await deleteBook(event.body);
-        }
-      case "PATCH":
-        if (event.requestContext.path.includes("/{id}/comments")) {
-          return await updateComment(event.pathParameters.id, event.pathParameters.commentId);
-        } else {
-          return await updateBook(event.body);
-        }
-
-      default:
-        return createResponse(400, `Unsupported method ${event.httpMethod}`);
-    }
-  } catch (err) {
-    console.log(err);
+    return await getAllBooks();
+  } catch(error) {
+    console.log(error);
     return createResponse(500, `Something went wrong`);
   }
 };
+exports.lambdaGetBookById = async (event, context) => {
+  try {
+    return await getBookById(event.pathParameters.id);
+  } catch(error) {
+    console.log(error);
+    if(error.status !== 500) {
+      return createResponse(error.status, error.message);
+    }
+    return createResponse(500, `Something went wrong`);
+  }
+}
+exports.lambdaCreateBook = async (event, context) => 
+{
+  try {
+    return await createBook(event.body);
+  } catch(error) {
+    console.log(error);
+    return createResponse(500, `Something went wrong`);
+  }
+}
+
+exports.lambdaUpdateBook = async (event, context) => 
+{
+  try {
+    return await updateBook(event.body);
+  } catch(error) {
+    console.log(error);
+    if(error.status !== 500) {
+      return createResponse(error.status, error.message);
+    }
+    return createResponse(500, `Something went wrong`);
+  }
+}
+
+exports.lambdaDeleteBook = async (event, context) => 
+{
+  try {
+    return await deleteBook(event.pathParameters.id);
+  } catch(error) {
+    console.log(error);
+    if(error.status !== 500) {
+      return createResponse(error.status, error.message);
+    }
+    return createResponse(500, `Something went wrong`);
+  }
+}
 
 const createResponse = (statusCode, message) => ({
   statusCode,
@@ -47,7 +62,6 @@ const createResponse = (statusCode, message) => ({
 });
 
 const getAllBooks = async () => {
-  
   const dbBooks = await dbManager.getAllBooks();
 
   // TO-DO: Transform response from db to dtoResponse
@@ -57,57 +71,30 @@ const getAllBooks = async () => {
 
 const getBookById = async (id) => {
   const book = await dbManager.getBookById(id);
-  return createResponse(book ? 200 : 404, book);
+  return createResponse(200, book);
 };
 
 const createBook = async (payload) => {
   payload = JSON.parse(payload);
 
-  const createdBook = dbManager.createBook(payload);
+  const createdBook = await dbManager.createBook(payload);
 
   // TO-DO: Transform response from db to dtoResponse
 
   return createResponse(201, createdBook);
 };
 
-const createComment = async (id, payload) => {
+const updateBook = async (id, payload) => {
   payload = JSON.parse(payload);
-  const comment = {
-    "comment": payload.comment,
-    "score": payload.score,
-    "user": {
-        "nick": payload.userNick,
-        "email": "user1@email.es"
-    },
-    id
-  };
-
-  // TO-DO: Use real db & transform response from db to dtoResponse
-
-  return createResponse(201, comment);
+  const book = await dbManager.updateBook(id, payload);
+  return createResponse(200, book);
 };
 
-const deleteComment = async (id, commentId) => {
-  const comment = dbManager.deleteComment(id, commentId);
-  
-    return createResponse(comment ? 200 : 404, comment);
-};
+const deleteBook = async (id) => {
 
+  const deletedBook = await dbManager.deleteBook(id);
 
-const updateComment = async (id, commentId) => {
-  const comment = dbManager.deleteComment(id, commentId);
-  
-    return createResponse(comment ? 200 : 404, comment);
-};
+  // TO-DO: Transform response from db to dtoResponse
 
-const getAllComments = async () => {
-    const comments = dbManager.getAllComments();
-  
-    return createResponse(comments ? 200 : 404, comments);
-};
-
-const getCommentById = async (id, commentId) => {
-  const comment = dbManager.getCommentById(id,commentId);
-
-  return createResponse(comment ? 200 : 404, comment);
+  return createResponse(200, deletedBook);
 };
