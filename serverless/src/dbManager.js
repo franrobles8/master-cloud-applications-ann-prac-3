@@ -1,20 +1,19 @@
 const uuid = require("uuid");
 const AWS = require("aws-sdk");
-const HTTPErrors = require("./http-error");
-
-const HTTPError = HTTPErrors.HTTPError
+const { HTTPError } = require("./http-error");
 
 const createClient = () => {
   let options = {};
   options.region = process.env.AWS_REGION || "eu-west-2";
   options.endpoint = process.env.ENDPOINT_OVERRIDE
     ? process.env.ENDPOINT_OVERRIDE
-    : 'http://172.17.0.1:8000/'; //"https://dynamodb.eu-west-2.amazonaws.com";
+    : "https://dynamodb.eu-west-2.amazonaws.com";
   return new AWS.DynamoDB.DocumentClient(options);
 };
 
 const docClient = createClient();
 const booksTable = "books";
+const commentsTable = "comments";
 const usersTable = "users";
 
 const getAllBooks = async () => {
@@ -23,6 +22,7 @@ const getAllBooks = async () => {
   };
 
   const books = await docClient.scan(params).promise();
+
   return books.Items;
 };
 
@@ -60,7 +60,7 @@ const createBook = async (payload) => {
 };
 
 const updateBook = async (id, payload) => {
-  getBookById(id);
+  await getBookById(id);
 
   const params = {
     TableName: booksTable,
@@ -78,7 +78,9 @@ const updateBook = async (id, payload) => {
   return params.Item;
 };
 
-const deleteBook = async (id, payload) => {
+const deleteBook = async (id) => {
+  await getBookById(id);
+
   const params = {
     TableName: booksTable,
     Key: {
@@ -161,6 +163,84 @@ const deleteUser = async (id, payload) => {
   return user.Attributes;
 }
 
+const getAllComments = async () => {
+  const params = {
+    TableName: commentsTable,
+  };
+
+  const comments = await docClient.scan(params).promise();
+
+  return comments.Items;
+};
+
+const getCommentById = async (bookId, commentId) => {
+  await getBookById(bookId);
+
+  const params = {
+    TableName: commentsTable,
+    Key: {
+      id: commentId,
+    },
+  };
+  const comment = await docClient.get(params).promise();
+
+  if (!comment.Item) {
+    throw new HTTPError(404, "Comment not found");
+  }
+
+  return comment.Item;
+};
+
+const createComment = async (bookId, payload) => {
+  
+  await getBookById(bookId);
+  // const user = await getUserByUserNick(payload.userNick);
+
+  const params = {
+    TableName: commentsTable,
+    Item: {
+      id: uuid.v1(),
+      bookId,
+      // userId: user.id,
+      ...payload,
+    },
+  };
+  await docClient.put(params).promise();
+  return params.Item;
+};
+
+const updateComment = async (bookId, commentId, payload) => {
+  await getCommentById(bookId, commentId);
+
+  const params = {
+    TableName: commentsTable,
+    Item: {
+      id: commentId,
+      comment: payload.comment,
+      userNick: payload.userNick,
+      score: payload.score
+    },
+  };
+
+  await docClient.put(params).promise();
+  return params.Item;
+};
+
+const deleteComment = async (bookId, commentId) => {
+  await getCommentById(bookId, commentId);
+
+  const params = {
+    TableName: commentsTable,
+    Key: {
+        id: commentId
+    },
+    ReturnValues: 'ALL_OLD'
+  };
+
+  const comment = await docClient.delete(params).promise();
+  return comment.Attributes;
+};
+
 module.exports = {
   getAllBooks,
   getBookById,
@@ -172,4 +252,9 @@ module.exports = {
   getUserById,
   deleteUser,
   updateUser,
+  getAllComments,
+  getCommentById,
+  createComment,
+  updateComment,
+  deleteComment
 };

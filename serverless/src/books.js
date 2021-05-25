@@ -1,6 +1,5 @@
 const dbManager = require("./dbManager");
 
-// Books
 exports.lambdaGetAllBooks = async (event, context) => {
   try {
     const books = await getAllBooks();
@@ -68,8 +67,6 @@ const createResponse = (statusCode, message) => ({
 const getAllBooks = async () => {
   const dbBooks = await dbManager.getAllBooks();
 
-  // TO-DO: Transform response from db to dtoResponse
-
   return createResponse(200, dbBooks);
 };
 
@@ -83,8 +80,6 @@ const createBook = async (payload) => {
 
   const book = await dbManager.createBook(payload);
 
-  // TO-DO: Transform response from db to dtoResponse
-
   return createResponse(201, book);
 };
 
@@ -97,8 +92,6 @@ const updateBook = async (id, payload) => {
 const deleteBook = async (id) => {
 
   const deletedBook = await dbManager.deleteBook(id);
-
-  // TO-DO: Transform response from db to dtoResponse
 
   return createResponse(200, deletedBook);
 };

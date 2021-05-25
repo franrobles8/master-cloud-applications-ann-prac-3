@@ -5,6 +5,13 @@ Description: >
 
   SAM template for books application
 
+Globals:
+  Function:
+    Timeout: 15
+    Environment:
+        Variables:
+          ENDPOINT_OVERRIDE:
+
 Resources:
   booksGetAllBooksFunction:
     Type: AWS::Serverless::Function
@@ -18,16 +25,6 @@ Resources:
           Properties:
             Path: /api/v1/books/
             Method: get
-        lambdaCreateComment:
-          Type: Api
-          Properties:
-            Path: /api/v1/books/{id}/comments
-            Method: post
-        lambdaDeleteComment:
-          Type: Api
-          Properties:
-            Path: /api/v1/books/{id}/comments/{commentId}
-            Method: delete
       Policies:
         - AmazonDynamoDBFullAccess
 

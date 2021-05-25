@@ -68,8 +68,6 @@ const createResponse = (statusCode, message) => ({
   const getAllUsers = async () => {
     const dbUsers = await dbManager.getAllUsers();
   
-    // TO-DO: Transform response from db to dtoResponse
-  
     return createResponse(200, dbUsers);
   };
   
@@ -83,8 +81,6 @@ const createResponse = (statusCode, message) => ({
   
     const user = await dbManager.createUser(payload);
   
-    // TO-DO: Transform response from db to dtoResponse
-  
     return createResponse(201, user);
   };
   
@@ -97,8 +93,6 @@ const createResponse = (statusCode, message) => ({
   const deleteUser = async (id) => {
   
     const deletedUser = await dbManager.deleteUser(id);
-  
-    // TO-DO: Transform response from db to dtoResponse
   
     return createResponse(200, deletedUser);
   };

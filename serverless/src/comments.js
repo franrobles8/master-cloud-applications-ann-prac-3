@@ -34,7 +34,8 @@ exports.lambdaUpdateComment = async (event, context) => {
   try {
     return await updateComment(
       event.pathParameters.id,
-      event.pathParameters.commentId
+      event.pathParameters.commentId,
+      event.body
     );
   } catch (error) {
     console.log(error);
@@ -59,43 +60,35 @@ const createResponse = (statusCode, message) => ({
   body: JSON.stringify(message),
 });
 
-const createComment = async (id, payload) => {
-  payload = JSON.parse(payload);
-  const comment = {
-    comment: payload.comment,
-    score: payload.score,
-    user: {
-      nick: payload.userNick,
-      email: "user1@email.es",
-    },
-    id,
-  };
-
-  // TO-DO: Use real db & transform response from db to dtoResponse
-
-  return createResponse(201, comment);
-};
-
-const deleteComment = async (id, commentId) => {
-  const comment = await dbManager.deleteComment(id, commentId);
-
-  return createResponse(comment ? 200 : 404, comment);
-};
-
-const updateComment = async (id, commentId) => {
-  const comment = await dbManager.deleteComment(id, commentId);
-
-  return createResponse(comment ? 200 : 404, comment);
-};
-
 const getAllComments = async () => {
   const comments = await dbManager.getAllComments();
 
-  return createResponse(comments ? 200 : 404, comments);
+  return createResponse(200, comments);
 };
 
 const getCommentById = async (id, commentId) => {
   const comment = await dbManager.getCommentById(id, commentId);
 
-  return createResponse(comment ? 200 : 404, comment);
+  return createResponse(200, comment);
+};
+
+const createComment = async (id, payload) => {
+  payload = JSON.parse(payload);
+
+  const comment = await dbManager.createComment(id, payload);
+
+  return createResponse(201, comment);
+};
+
+const updateComment = async (bookId, commentId, payload) => {
+  payload = JSON.parse(payload);
+  const comment = await dbManager.updateComment(bookId, commentId, payload);
+
+  return createResponse(200, comment);
+};
+
+const deleteComment = async (id, commentId) => {
+  const comment = await dbManager.deleteComment(id, commentId);
+
+  return createResponse(200, comment);
 };
