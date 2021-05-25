@@ -116,20 +116,6 @@ Resources:
       Policies:
         - AmazonDynamoDBFullAccess
     
-  usersGetCommentsByUserIdFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: users.lambdaGetCommentsByUserId
-      Runtime: nodejs14.x
-      Events:
-        lambdaGetUserById:
-          Type: Api
-          Properties:
-            Path: /api/v1/users/{id}/comments
-            Method: get
-      Policies:
-        - AmazonDynamoDBFullAccess
   
   usersCreateUserFunction:
     Type: AWS::Serverless::Function

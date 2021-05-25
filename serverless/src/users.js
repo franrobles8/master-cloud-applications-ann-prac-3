@@ -22,18 +22,6 @@ exports.lambdaGetUserById = async (event, context) => {
   }
 }
 
-exports.lambdaGetCommentsByUserId = async (event, context) => {
-  try {
-    return await getCommentsByUserId(event.pathParameters.id);
-  } catch(error) {
-    console.log(error);
-    if(error.status !== 500) {
-      return createResponse(error.status, error.message);
-    }
-    return createResponse(500, `Something went wrong`);
-  }
-};
-
 exports.lambdaCreateUser = async (event, context) => 
 {
   try {
@@ -87,11 +75,6 @@ const createResponse = (statusCode, message) => ({
   const getUserById = async (id) => {
     const user = await dbManager.getUserById(id);
     return createResponse(200, user);
-  };
-
-  const getCommentsByUserId = async (id) => {
-    const comments = await dbManager.getCommentsByUserId(id);
-    return createResponse(200, comments);
   };
   
   const createUser = async (payload) => {

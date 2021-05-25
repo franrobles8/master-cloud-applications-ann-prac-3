@@ -114,13 +114,22 @@ const getUserById = async (id) => {
       id,
     },
   };
+  const comments = await getCommentsByUserId(id);
   const user = await docClient.get(params).promise();
 
   if (!user.Item) {
     throw new HTTPError(404, "User not found");
   }
 
-  return user.Item;
+  return {
+    ...user.Item,
+    comments: comments.map(comment => ({
+      id: comment.id,
+      score: comment.score,
+      message: comment.message,
+      bookId: comment.bookId
+    }))
+  }
 };
 
 const createUser = async (payload) => {
@@ -261,14 +270,7 @@ const getCommentsByUserId = async (userId) => {
   };
   const comments = await docClient.scan(params).promise();
 
-  return {
-    id: userId,
-    comments: comments.Items.map((comment) => ({
-      comment: comment.comment,
-      score: comment.score,
-      bookId: comment.bookId,
-    })),
-  };
+  return comments.Items;
 };
 
 const getCommentsFromBook = async (bookId) => {
@@ -277,10 +279,10 @@ const getCommentsFromBook = async (bookId) => {
     ProjectionExpression: "id, score, userNick",
     FilterExpression: "#b = :b",
     ExpressionAttributeNames: {
-        "#b": "bookId",
+      "#b": "bookId",
     },
     ExpressionAttributeValues: {
-        ":b": bookId,
+      ":b": bookId,
     },
   };
   const comments = await docClient.scan(params).promise();
