@@ -10,7 +10,7 @@ Globals:
     Timeout: 15
     Environment:
         Variables:
-          ENDPOINT_OVERRIDE:
+          ENDPOINT_OVERRIDE: ""
 
 Resources:
   booksGetAllBooksFunction:
@@ -250,6 +250,20 @@ Resources:
             ReadCapacityUnits: 5
             WriteCapacityUnits: 5
 
+  usersTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+        TableName: users
+        AttributeDefinitions:
+            -   AttributeName: id
+                AttributeType: S
+        KeySchema:
+            -   AttributeName: id
+                KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+
   commentsTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
@@ -269,4 +283,4 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   BookApi:
     Description: "API Gateway endpoint URL for Prod stage for books function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/books/"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"

@@ -7,7 +7,7 @@ const createClient = () => {
   options.region = process.env.AWS_REGION || "eu-west-2";
   options.endpoint = process.env.ENDPOINT_OVERRIDE
     ? process.env.ENDPOINT_OVERRIDE
-    : "http://172.17.0.1:8000/"; //"https://dynamodb.eu-west-2.amazonaws.com";
+    : "https://dynamodb.eu-west-2.amazonaws.com";
   return new AWS.DynamoDB.DocumentClient(options);
 };
 
