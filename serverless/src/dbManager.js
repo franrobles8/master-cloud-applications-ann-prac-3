@@ -91,24 +91,13 @@ const deleteBook = async (id, payload) => {
   return book.Attributes;
 }
 
-const getAllUsers = () => {
+const getAllUsers = async () => {
   const params = {
     TableName: usersTable,
   };
 
-  return docClient.scan(params).promise();
-};
-
-const createUser = (payload) => {
-  const params = {
-    TableName: usersTable,
-    Item: {
-      id: uuid.v1(),
-      ...payload,
-    },
-  };
-
-  return docClient.put(params).promise();
+  const users = await docClient.scan(params).promise();
+  return users.Items;
 };
 
 const getUserById = async (id) => {
@@ -119,38 +108,58 @@ const getUserById = async (id) => {
     },
   };
   const user = await docClient.get(params).promise();
+
+  if (!user.Item) {
+    throw new HTTPError(404, "User not found");
+  }
+
   return user.Item;
 };
 
-const deleteUser = async (id) => {
+const createUser = async (payload) => {
+  const params = {
+    TableName: usersTable,
+    Item: {
+      id: uuid.v1(),
+      nick: payload.nick,
+      email: payload.email
+      
+    },
+  };
+
+  await docClient.put(params).promise();
+  return params.Item;
+};
+
+const updateUser = async (id, payload) => {
+  getUserById(id);
+
+  const params = {
+      TableName: usersTable,
+      Item: {
+        id: id,
+        nick: payload.nick,
+        email: payload.email
+        
+      },
+    };
+
+  await docClient.put(params).promise();
+  return params.Item;
+};
+
+const deleteUser = async (id, payload) => {
   const params = {
     TableName: usersTable,
     Key: {
-      id,
+        id
     },
-    ReturnValues: "ALL_OLD",
+    ReturnValues: 'ALL_OLD'
   };
 
   const user = await docClient.delete(params).promise();
   return user.Attributes;
-};
-
-const updateUser = async (id, mail) => {
-  const params = {
-    TableName: usersTable,
-    Key: {
-      id,
-    },
-    UpdateExpression: "set email = :e",
-    ExpressionAttributeValues: {
-      ":e": email,
-    },
-    ReturnValues: "ALL_NEW",
-  };
-
-  const user = await docClient.update(params).promise();
-  return user.Attributes;
-};
+}
 
 module.exports = {
   getAllBooks,
