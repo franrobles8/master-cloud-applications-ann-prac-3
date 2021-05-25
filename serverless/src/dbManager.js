@@ -51,7 +51,7 @@ const createBook = async (payload) => {
       summary: payload.summary,
       author: payload.author,
       publisher: payload.publisher,
-      publicationYear: payload.publicationYear
+      publicationYear: payload.publicationYear,
     },
   };
 
@@ -70,7 +70,7 @@ const updateBook = async (id, payload) => {
       summary: payload.summary,
       author: payload.author,
       publisher: payload.publisher,
-      publicationYear: payload.publicationYear
+      publicationYear: payload.publicationYear,
     },
   };
 
@@ -84,14 +84,14 @@ const deleteBook = async (id) => {
   const params = {
     TableName: booksTable,
     Key: {
-        id
+      id,
     },
-    ReturnValues: 'ALL_OLD'
+    ReturnValues: "ALL_OLD",
   };
 
   const book = await docClient.delete(params).promise();
   return book.Attributes;
-}
+};
 
 const getAllUsers = async () => {
   const params = {
@@ -124,8 +124,7 @@ const createUser = async (payload) => {
     Item: {
       id: uuid.v1(),
       nick: payload.nick,
-      email: payload.email
-      
+      email: payload.email,
     },
   };
 
@@ -137,14 +136,13 @@ const updateUser = async (id, payload) => {
   getUserById(id);
 
   const params = {
-      TableName: usersTable,
-      Item: {
-        id: id,
-        nick: payload.nick,
-        email: payload.email
-        
-      },
-    };
+    TableName: usersTable,
+    Item: {
+      id: id,
+      nick: payload.nick,
+      email: payload.email,
+    },
+  };
 
   await docClient.put(params).promise();
   return params.Item;
@@ -154,14 +152,14 @@ const deleteUser = async (id, payload) => {
   const params = {
     TableName: usersTable,
     Key: {
-        id
+      id,
     },
-    ReturnValues: 'ALL_OLD'
+    ReturnValues: "ALL_OLD",
   };
 
   const user = await docClient.delete(params).promise();
   return user.Attributes;
-}
+};
 
 const getAllComments = async () => {
   const params = {
@@ -192,17 +190,16 @@ const getCommentById = async (bookId, commentId) => {
 };
 
 const createComment = async (bookId, payload) => {
-  
   await getBookById(bookId);
-  // const user = await getUserByUserNick(payload.userNick);
+  const user = await getUserById(payload.userId);
 
   const params = {
     TableName: commentsTable,
     Item: {
       id: uuid.v1(),
-      bookId,
-      // userId: user.id,
       ...payload,
+      bookId,
+      userNick: user.nick
     },
   };
   await docClient.put(params).promise();
@@ -210,15 +207,15 @@ const createComment = async (bookId, payload) => {
 };
 
 const updateComment = async (bookId, commentId, payload) => {
-  await getCommentById(bookId, commentId);
+  const oldComment = await getCommentById(bookId, commentId);
 
   const params = {
     TableName: commentsTable,
     Item: {
       id: commentId,
-      comment: payload.comment,
-      userNick: payload.userNick,
-      score: payload.score
+      ...payload,
+      bookId,
+      userId: oldComment.userId
     },
   };
 
@@ -232,9 +229,9 @@ const deleteComment = async (bookId, commentId) => {
   const params = {
     TableName: commentsTable,
     Key: {
-        id: commentId
+      id: commentId,
     },
-    ReturnValues: 'ALL_OLD'
+    ReturnValues: "ALL_OLD",
   };
 
   const comment = await docClient.delete(params).promise();
@@ -256,5 +253,5 @@ module.exports = {
   getCommentById,
   createComment,
   updateComment,
-  deleteComment
+  deleteComment,
 };
