@@ -162,7 +162,7 @@ const deleteUser = async (id) => {
     const user = await docClient.delete(params).promise();
     return user.Attributes;
   } else {
-    throw new HTTPError(409, "User has comments")
+    throw new HTTPError(409, "User has comments");
   }
 };
 
@@ -204,7 +204,7 @@ const createComment = async (bookId, payload) => {
       id: uuid.v1(),
       ...payload,
       bookId,
-      userNick: user.nick
+      userNick: user.nick,
     },
   };
   await docClient.put(params).promise();
@@ -220,7 +220,7 @@ const updateComment = async (bookId, commentId, payload) => {
       id: commentId,
       ...payload,
       bookId,
-      userId: oldComment.userId
+      userId: oldComment.userId,
     },
   };
 
@@ -248,15 +248,23 @@ const getCommentsByUserId = async (userId) => {
     TableName: commentsTable,
     FilterExpression: "#u = :u",
     ExpressionAttributeNames: {
-        "#u": "userId",
+      "#u": "userId",
     },
     ExpressionAttributeValues: {
-        ":u": userId
-    }
+      ":u": userId,
+    },
   };
   const comments = await docClient.scan(params).promise();
-  return comments.Items;
-}
+
+  return {
+    id: userId,
+    comments: comments.Items.map((comment) => ({
+      comment: comment.comment,
+      score: comment.score,
+      bookId: comment.bookId,
+    })),
+  };
+};
 
 module.exports = {
   getAllBooks,
@@ -267,6 +275,7 @@ module.exports = {
   getAllUsers,
   createUser,
   getUserById,
+  getCommentsByUserId,
   deleteUser,
   updateUser,
   getAllComments,
