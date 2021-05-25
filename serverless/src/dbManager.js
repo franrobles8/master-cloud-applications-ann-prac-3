@@ -19,6 +19,7 @@ const usersTable = "users";
 const getAllBooks = async () => {
   const params = {
     TableName: booksTable,
+    ProjectionExpression: "title, id",
   };
 
   const books = await docClient.scan(params).promise();
@@ -27,6 +28,7 @@ const getAllBooks = async () => {
 };
 
 const getBookById = async (id) => {
+  const comments = await getCommentsFromBook(id);
   const params = {
     TableName: booksTable,
     Key: {
@@ -39,7 +41,10 @@ const getBookById = async (id) => {
     throw new HTTPError(404, "Book not found");
   }
 
-  return book.Item;
+  return {
+    ...book.Item,
+    comments
+  }
 };
 
 const createBook = async (payload) => {
@@ -265,6 +270,22 @@ const getCommentsByUserId = async (userId) => {
     })),
   };
 };
+
+const getCommentsFromBook = async (bookId) => {
+  const params = {
+    TableName: commentsTable,
+    ProjectionExpression: "id, score, userNick",
+    FilterExpression: "#b = :b",
+    ExpressionAttributeNames: {
+        "#b": "bookId",
+    },
+    ExpressionAttributeValues: {
+        ":b": bookId,
+    },
+  };
+  const comments = await docClient.scan(params).promise();
+  return comments.Items;
+}
 
 module.exports = {
   getAllBooks,

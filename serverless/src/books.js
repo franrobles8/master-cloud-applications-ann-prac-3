@@ -9,6 +9,7 @@ exports.lambdaGetAllBooks = async (event, context) => {
     return createResponse(500, `Something went wrong`);
   }
 };
+
 exports.lambdaGetBookById = async (event, context) => {
   try {
     return await getBookById(event.pathParameters.id);
