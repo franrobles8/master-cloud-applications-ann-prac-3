@@ -3,6 +3,23 @@
         {
             "type": "aws-sam",
             "request": "direct-invoke",
+            "name": "API serverless:usersDeleteUserFunction",
+            "invokeTarget": {
+                "target": "api",
+                "templatePath": "${workspaceFolder}/serverless/template.yaml",
+                "logicalId": "usersDeleteUserFunction"
+            },
+            "api": {
+                "path": "/api/v1/users/333f7210-bd88-11eb-be96-bd75abeef27d",
+                "httpMethod": "delete",
+                "payload": {
+                    "json": {}
+                }
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
             "name": "API serverless:booksUpdateBookFunction",
             "invokeTarget": {
                 "target": "api",

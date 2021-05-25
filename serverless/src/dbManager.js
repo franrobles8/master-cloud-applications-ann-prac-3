@@ -7,7 +7,7 @@ const createClient = () => {
   options.region = process.env.AWS_REGION || "eu-west-2";
   options.endpoint = process.env.ENDPOINT_OVERRIDE
     ? process.env.ENDPOINT_OVERRIDE
-    : "https://dynamodb.eu-west-2.amazonaws.com";
+    : "http://172.17.0.1:8000/"; //"https://dynamodb.eu-west-2.amazonaws.com";
   return new AWS.DynamoDB.DocumentClient(options);
 };
 
@@ -148,7 +148,9 @@ const updateUser = async (id, payload) => {
   return params.Item;
 };
 
-const deleteUser = async (id, payload) => {
+const deleteUser = async (id) => {
+  const comments = await getCommentsByUserId(id);
+
   const params = {
     TableName: usersTable,
     Key: {
@@ -156,9 +158,12 @@ const deleteUser = async (id, payload) => {
     },
     ReturnValues: "ALL_OLD",
   };
-
-  const user = await docClient.delete(params).promise();
-  return user.Attributes;
+  if (comments.length === 0) {
+    const user = await docClient.delete(params).promise();
+    return user.Attributes;
+  } else {
+    throw new HTTPError(409, "User has comments")
+  }
 };
 
 const getAllComments = async () => {
@@ -237,6 +242,21 @@ const deleteComment = async (bookId, commentId) => {
   const comment = await docClient.delete(params).promise();
   return comment.Attributes;
 };
+
+const getCommentsByUserId = async (userId) => {
+  const params = {
+    TableName: commentsTable,
+    FilterExpression: "#u = :u",
+    ExpressionAttributeNames: {
+        "#u": "userId",
+    },
+    ExpressionAttributeValues: {
+        ":u": userId
+    }
+  };
+  const comments = await docClient.scan(params).promise();
+  return comments.Items;
+}
 
 module.exports = {
   getAllBooks,
