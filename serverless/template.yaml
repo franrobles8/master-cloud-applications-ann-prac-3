@@ -89,6 +89,79 @@ Resources:
             Method: delete
       Policies:
         - AmazonDynamoDBFullAccess
+  usersGetAllUsersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: users.lambdaGetAllUsers
+      Runtime: nodejs14.x
+      Events:
+        lambdaGetAllUsers:
+          Type: Api
+          Properties:
+            Path: /api/v1/users/
+            Method: get
+      Policies:
+        - AmazonDynamoDBFullAccess
+
+  usersGetUserByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: users.lambdaGetUserById
+      Runtime: nodejs14.x
+      Events:
+        lambdaGetUserById:
+          Type: Api
+          Properties:
+            Path: /api/v1/users/{id}
+            Method: get
+      Policies:
+        - AmazonDynamoDBFullAccess
+  
+  usersCreateUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: users.lambdaCreateUser
+      Runtime: nodejs14.x
+      Events:
+        lambdaCreateUser:
+          Type: Api
+          Properties:
+            Path: /api/v1/users/
+            Method: post
+      Policies:
+        - AmazonDynamoDBFullAccess
+
+  usersUpdateUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: users.lambdaUpdateUser
+      Runtime: nodejs14.x
+      Events:
+        lambdaUpdateUser:
+          Type: Api
+          Properties:
+            Path: /api/v1/users/{id}
+            Method: patch
+      Policies:
+        - AmazonDynamoDBFullAccess
+  usersDeleteUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: users.lambdaDeleteUser
+      Runtime: nodejs14.x
+      Events:
+        lambdaDeleteUser:
+          Type: Api
+          Properties:
+            Path: /api/v1/users/{id}
+            Method: delete
+      Policies:
+        - AmazonDynamoDBFullAccess
 
   commentsGetAllCommentsFunction:
     Type: AWS::Serverless::Function
